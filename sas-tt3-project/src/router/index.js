@@ -81,25 +81,24 @@ const router = createRouter({
   ],
 });
 
-
-const sendToken = () => {
-  const jwtToken = localStorage.getItem("jwtToken");
-  if (!jwtToken) {
-    const base64Payload = jwtToken.split(".")[1];
-    const decodePayload = atob(base64Payload);
-    const payloadObject = JSON.parse(decodePayload);
-    router.beforeEach((to,from,next)=>{
-      if(to.name !== 'UserAll'){
-        console.log(payloadObject.sub);
-        if(payloadObject.role !== 'admin' && to.name === 'ShowUser'){
-          alert('you dont have access!!')
-        }
-        else alert('you have access!!')
-      }
-      else next()
-    })
-  }
-};
+// const sendToken = () => {
+//   const jwtToken = localStorage.getItem("jwtToken");
+//   if (!jwtToken) {
+//     const base64Payload = jwtToken.split(".")[1];
+//     const decodePayload = atob(base64Payload);
+//     const payloadObject = JSON.parse(decodePayload);
+//     router.beforeEach((to,from,next)=>{
+//       if(to.name !== 'UserAll'){
+//         console.log(payloadObject.sub);
+//         if(payloadObject.role !== 'admin' && to.name === 'ShowUser'){
+//           alert('you dont have access!!')
+//         }
+//         else alert('you have access!!')
+//       }
+//       else next()
+//     })
+//   }
+// };
 
 // const router = createRouter({ history, routes })
 export default router;

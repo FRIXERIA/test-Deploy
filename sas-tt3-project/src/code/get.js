@@ -10,7 +10,6 @@ let status;
 const jwtToken = localStorage.getItem("jwtToken");
 const refreshToken = localStorage.getItem("refreshToken");
 
-
 const fetchToken = async (refresh) => {
   try {
     const jwtToken = localStorage.getItem("jwtToken");
@@ -83,7 +82,6 @@ const fetchData = async () => {
 };
 
 const fetchId = async (id, num = false) => {
-  
   try {
     let jwtToken = localStorage.getItem("jwtToken");
     let refreshToken = localStorage.getItem("refreshToken");
@@ -93,37 +91,6 @@ const fetchId = async (id, num = false) => {
     //   return;
     // }
     if(jwtToken!=null){
-// const base64Payload = jwtToken.split(".")[1];
-// const decodePayload = atob(base64Payload);
-// let payloadObject = JSON.parse(decodePayload);
-//       if(payloadObject.role=="announcer"){
-//         const res = await fetch(
-//           `${import.meta.env.VITE_ROOT_API}/api/announcements/${id}?count=${num}`,
-//           {
-//             method: "GET"
-//           }
-//         );
-//         if (res.ok) {
-//           const data = await res.json();
-//           return data;
-//         }
-//         if (res.status === 401) {
-//           if ((await res.text()) == "JWT Token has expired") {
-//             await fetchToken(refreshToken);
-//           }
-//           return res.status
-//         }
-//         if(res.status === 403){
-//           return res.status
-//         }
-//          else {
-//           const errorResponse = await res.json();
-//           alert(`There is an error : ${JSON.stringify(errorResponse)}`);
-//         }
-
-
-//       }
-      // else{
     const res = await fetch(
       `${import.meta.env.VITE_ROOT_API}/api/announcements/${id}?count=${num}`,
       {
@@ -150,9 +117,7 @@ const fetchId = async (id, num = false) => {
       const errorResponse = await res.json();
       alert(`There is an error : ${JSON.stringify(errorResponse)}`);
     }
-  // }
   }
-
   if(!jwtToken){
 
     const res = await fetch(
@@ -175,6 +140,28 @@ const fetchId = async (id, num = false) => {
       alert(`There is an error : ${JSON.stringify(errorResponse)}`);
     }
   }
+  // if(payloadObject.role== 'announcer'){
+
+  //   const res = await fetch(
+  //     `${import.meta.env.VITE_ROOT_API}/api/announcements/${id}?count=${num}`,
+  //     {
+  //       method: "GET",
+  //     }
+  //   );
+  //   if (res.ok) {
+  //     const data = await res.json();
+  //     return data;
+  //   }
+  //   if (res.status === 401) {
+  //     if ((await res.text()) == "JWT Token has expired") {
+  //       await fetchToken(refreshToken);
+  //     }
+  //   } 
+  //   else {
+  //     const errorResponse = await res.json();
+  //     alert(`There is an error : ${JSON.stringify(errorResponse)}`);
+  //   }
+  // }
 
   } catch (error) {
     alert(error);
@@ -185,6 +172,11 @@ const fetchCategory = async () => {
   try {
     const jwtToken = localStorage.getItem("jwtToken");
     const refreshToken = localStorage.getItem("refreshToken");
+    // Ensure the token is available before making the API call
+    // if (!jwtToken) {
+    //   console.error('JWT Token not found in local storage');
+    //   return;
+    // }
     const res = await fetch(`${import.meta.env.VITE_ROOT_API}/api/category`, {
       method: "GET",
     });
@@ -306,7 +298,6 @@ const fetchUser = async () => {
 };
 
 const fetchUserId = async (id) => {
-  console.log(payloadObject.role)
   try {
     const jwtToken = localStorage.getItem("jwtToken");
     // Ensure the token is available before making the API call

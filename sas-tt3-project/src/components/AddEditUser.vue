@@ -46,7 +46,6 @@ const haveNoRight = ref(false)
 //tokens
 const jwtToken = localStorage.getItem("jwtToken");
 const refreshToken = localStorage.getItem("refreshToken");
-const payloadObject = ref()
 
 //convert date
 const options = ref({
@@ -75,50 +74,41 @@ onMounted(async () => {
   if (!jwtToken) {
     loginfirst.value = true
     return
-  }
-  if (jwtToken) {
-    const base64Payload = jwtToken.split(".")[1];
-    const decodePayload = atob(base64Payload);
-    payloadObject.value = JSON.parse(decodePayload);
-    if (payloadObject.value.role == 'announcer') {
-      haveNoRight.value = true
-      return
     }
+    else{
+  //add
+  console.log(params.id);
+  if (params.id === undefined) {
+    allUser.value = {
+      username: "",
+      name: "",
+      password: "",
+      email: "",
+      role: "",
+    };
+    allUser.value.role = "announcer";
   }
+  //edit
   else {
-    //add
-    console.log(params.id);
-    if (params.id === undefined) {
-      allUser.value = {
-        username: "",
-        name: "",
-        password: "",
-        email: "",
-        role: "",
-      };
-      allUser.value.role = "announcer";
+    allUser.value = await fetchUserId(params.id);
+    if(allUser.value==403){
+      haveNoRight.value = true
     }
-    //edit
-    else {
-      allUser.value = await fetchUserId(params.id);
-      if (allUser.value == 403) {
-        haveNoRight.value = true
-      }
-      usernameOld = allUser.value.username;
-      nameOld = allUser.value.name;
-      emailOld = allUser.value.email;
-      roleOld = allUser.value.role;
-      //createdOn format
-      if (allUser.value.createdOn !== null) {
-        allUser.value.createdOn = convertDate(allUser.value.createdOn);
-      }
+    usernameOld = allUser.value.username;
+    nameOld = allUser.value.name;
+    emailOld = allUser.value.email;
+    roleOld = allUser.value.role;
+    //createdOn format
+    if (allUser.value.createdOn !== null) {
+      allUser.value.createdOn = convertDate(allUser.value.createdOn);
+    }
 
-      //updatedOn format
-      if (allUser.value.updatedOn !== null) {
-        allUser.value.updatedOn = convertDate(allUser.value.updatedOn);
-      }
+    //updatedOn format
+    if (allUser.value.updatedOn !== null) {
+      allUser.value.updatedOn = convertDate(allUser.value.updatedOn);
     }
   }
+}
   checkResolution();
   window.addEventListener("resize", checkResolution);
   return () => {
@@ -274,7 +264,7 @@ let addNewUser = async (addNewUser) => {
       if (res.status === 401) {
         if (res.text() == 'JWT Token has expired') {
           const tokenRes = await fetchToken(refreshToken)
-          if (tokenRes == 401) {
+          if(tokenRes == 401){
             session.value = true
           }
         }
@@ -362,7 +352,7 @@ let editUser = async (edit) => {
     else if (res.status === 401) {
       if (res.text() == 'JWT Token has expired') {
         await fetchToken(refreshToken)
-      }
+      } 
     }
     else {
       errorResponse.value = await res.json();
