@@ -39,6 +39,8 @@ public class AnnouncementService {
     public CategoryService categoryService;
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
+//    @Autowired
+//    private SendEmailService emailService;
 
     @Autowired
 private UserService userService;
@@ -111,7 +113,8 @@ private UserService userService;
             return repo.findById(id).orElseThrow(()->
                     new ResponseStatusException(HttpStatus.NOT_FOUND, "Announcement id "+ id + " does not exist"));
         }
-        if(num==true){
+      if(num==true){
+          System.out.println();
             Announcement numberFor =  repo.findById(id).orElseThrow(()->
                     new ResponseStatusException(HttpStatus.NOT_FOUND, "Announcement id "+ id + " does not exist"));;
             Integer beforeNum =numberFor.getViewCount();
@@ -291,7 +294,11 @@ public void deleteAnnouncement(Integer id) {
             if (!errors.isEmpty()) {
                 throw new InvalidRequestException("Announcement attributes validation failed!", errors);
             }
+//            if(announcement.getPublishDate()==null){
+//                emailService.sendupdateAnnounceMail(announcement);
+//            }
             // Save the updated announcement
+//            emailService.sendupdateAnnounceMail(announcement);
             return repo.saveAndFlush(announcement);
         } catch (ItemNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Announcement not found", e);

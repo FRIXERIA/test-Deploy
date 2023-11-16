@@ -20,4 +20,8 @@ public class Category {
     @JsonIgnore
     @OneToMany(mappedBy = "announcementCategory")
     private Set<Announcement> announcements = new LinkedHashSet<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "category")
+    private Set<Subscribe> subscriptions;
 }

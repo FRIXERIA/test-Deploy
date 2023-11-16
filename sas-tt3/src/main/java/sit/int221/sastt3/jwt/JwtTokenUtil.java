@@ -14,6 +14,8 @@ import org.springframework.stereotype.Component;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import sit.int221.sastt3.entities.Email;
+import sit.int221.sastt3.entities.Subscribe;
 import sit.int221.sastt3.repositories.UserRepo;
 
 @Component
@@ -28,7 +30,9 @@ private UserRepo repo;
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
     }
-
+    public String getOTPFromToken(String token) {
+        return getClaimFromToken(token, Claims::getSubject);
+    }
     //retrieve expiration date from jwt token
     public Date getExpirationDateFromToken(String token) {
         return getClaimFromToken(token, Claims::getExpiration);
@@ -49,6 +53,9 @@ private UserRepo repo;
     public String getAllClaimNameFromToken(String token) {
         return Jwts.parser().setSigningKey(jwtProperties.getSecretKey()).parseClaimsJws(token).getBody().get("sub",String.class);
     }
+    public String getAllClaimsOTPFromToken(String token) {
+        return Jwts.parser().setSigningKey(jwtProperties.getSecretKey()).parseClaimsJws(token).getBody().get("otp",String.class);
+    }
 
     //check if the token has expired
     public Boolean isTokenExpired(String token) {
@@ -59,19 +66,34 @@ private UserRepo repo;
     //generate token for user
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        return doGenerateToken(claims, userDetails.getUsername(),repo.findByUsername(userDetails.getUsername()).getRole());
+        return doGenerateToken(claims, userDetails.getUsername(),repo.findByUsername(userDetails.getUsername()).getRole(),repo.findByUsername(userDetails.getUsername()).getEmail());
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        return doGenerateRefreshToken(claims, userDetails.getUsername(),repo.findByUsername(userDetails.getUsername()).getRole());
+        return doGenerateRefreshToken(claims, userDetails.getUsername(),repo.findByUsername(userDetails.getUsername()).getRole(),repo.findByUsername(userDetails.getUsername()).getEmail());
     }
-    private String doGenerateRefreshToken(Map<String,Object> claims, String subject,String roles){
+
+    public String generateOTPToken(Email subscribe, String otp ){
+        Map<String, Object> claims = new HashMap<>();
+        return doGenerateOTPToken(claims,subscribe.getEmail(),otp);
+    }
+    private String doGenerateRefreshToken(Map<String,Object> claims, String subject,String roles,String email){
         return  Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getRefreshTokenValidity())).claim("role",roles)
+                .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getRefreshTokenValidity())).claim("role",roles).claim("email",email)
+                .signWith(SignatureAlgorithm.HS512, jwtProperties.getReFreshTokenSecretKey())
+                .compact();
+    }
+
+    private String doGenerateOTPToken(Map<String,Object> claims, String email,String otp){
+        return  Jwts.builder()
+                .setClaims(claims)
+                .setSubject(email)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getOtpValidity())).claim("otp",otp)
                 .signWith(SignatureAlgorithm.HS512, jwtProperties.getReFreshTokenSecretKey())
                 .compact();
     }
@@ -80,10 +102,10 @@ private UserRepo repo;
     //2. Sign the JWT using the HS512 algorithm and secret key.
     //3. According to JWS Compact Serialization(https://tools.ietf.org/html/draft-ietf-jose-json-web-signature-41#section-3.1)
     //   compaction of the JWT to a URL-safe string
-    private String doGenerateToken(Map<String, Object> claims, String subject,String role) {
+    private String doGenerateToken(Map<String, Object> claims, String subject,String role,String email) {
 
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getTokenValidity())).claim("role",role)
+                .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getTokenValidity())).claim("role",role).claim("email",email)
                 .signWith(SignatureAlgorithm.HS512, jwtProperties.getSecretKey()).compact();
     }
     //validate token

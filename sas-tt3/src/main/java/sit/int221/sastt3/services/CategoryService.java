@@ -30,6 +30,8 @@ public class CategoryService {
     private ModelMapper modelMapper;
     @Autowired
     private UserService serviceUser;
+//    @Autowired
+//    private SendEmailService emailService;
     public List<Category> getAllCategory() {
         return repo.findAll();
     }
@@ -151,6 +153,10 @@ public Announcement addAnnouncement(AnnouncementInsert newAnnouncement){
             announcement.setViewCount(0);
         }
         // Save the new announcement
+//        if(announcement.getPublishDate()==null){
+//            emailService.sendnewAnnounceMail(announcement);
+//        }
+//        emailService.sendnewAnnounceMail(announcement);
         return AnnounceRepo.saveAndFlush(announcement);
     }
     catch (ItemNotFoundException exception){throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Announcement not found", exception);}

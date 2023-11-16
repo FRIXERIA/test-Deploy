@@ -132,7 +132,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String requestURL = request.getRequestURL().toString();
 
         // Skip filtering for certain URLs
-        if (requestURL.contains("/token") || requestURL.contains("/pages") || requestURL.contains("/category") || requestURL.contains("/announcements/{id}") && request.getMethod().equals("GET")) {
+        if (requestURL.contains("/token") || requestURL.contains("/sendMail")|| requestURL.contains("/verify")|| requestURL.contains("/files")|| requestURL.contains("/allData")||requestURL.contains("/all")|| requestURL.contains("/unsub") || requestURL.contains("/sendOTP")|| requestURL.contains("/pages") || requestURL.contains("/category") || requestURL.contains("/announcements/{id}") && request.getMethod().equals("GET")) {
             logger.info("Skipping filtering for URL: " + requestURL);
             chain.doFilter(request, response);
             return;

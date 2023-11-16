@@ -94,15 +94,15 @@ public class AnnounceController {
         if (announcement == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Announcement not found");
         }
-        if(token==null){
+       else if(token==null){
             System.out.println('a');
             return modelMapper.map(announcement, DetailDTO.class);
         }
-        if(count==true){
-            System.out.println('b');
-            return modelMapper.map(announcement, DetailDTO.class);
-        }
-        if(token.equals("null")){
+//        else if(count.equals(false)){
+//            System.out.println('j');
+//            return modelMapper.map(announcement, DetailDTO.class);
+//        }
+       else if(token.equals("null")){
             System.out.println('c');
             return modelMapper.map(announcement, DetailDTO.class);
         }
@@ -117,8 +117,18 @@ public class AnnounceController {
                     System.out.println('d');
                     return modelMapper.map(announcement, DetailDTO.class);
                 }
+                if(tokenRole.equals("announcer")){
+                    System.out.println("akkoekfok");
+                    if (count.equals(true)){
+                        System.out.println("fkfefwf");
+                        return modelMapper.map(announcement, DetailDTO.class);
+                    }
+                  else {
+                        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorizedhh2");
+                    }
+                }
                 else {
-                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized");
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorizedhh");
                 }
             }
 
@@ -127,7 +137,7 @@ public class AnnounceController {
                 return modelMapper.map(announcement, DetailDTO.class);
 
             } else {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorizedyy");
             }
         }
     }

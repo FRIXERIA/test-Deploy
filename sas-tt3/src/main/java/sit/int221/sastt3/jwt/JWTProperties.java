@@ -11,4 +11,5 @@ public class JWTProperties {
     private int tokenValidity;
     private int refreshTokenValidity;
     private String reFreshTokenSecretKey;
+    private int otpValidity;
 }
