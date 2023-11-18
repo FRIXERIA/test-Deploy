@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import sit.int221.sastt3.DTO.FileName;
 import sit.int221.sastt3.DTO.MultiPartAndEmail;
 import sit.int221.sastt3.entities.Announcement;
 import sit.int221.sastt3.entities.Email;
@@ -176,6 +177,15 @@ public class FileController {
     public String removeFile(@PathVariable String fileName){
         return fileService.deleteFile(fileName);
     }
+
+    @DeleteMapping ("/fileName/{id}")
+    public void removeFileDB(@PathVariable Integer id){
+        fileService.deleteFileDB(id);
+    }
+@DeleteMapping ("/fileStep/{id}")
+public void removeStep(@PathVariable Integer id, @RequestBody FileName fileName){
+         fileService.deleteFileByStep(id,fileName.getFileName());
+}
 
     @GetMapping ("/fileName/{id}")
     public List <Files> nameFiles (@PathVariable Integer id){

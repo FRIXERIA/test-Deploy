@@ -9,9 +9,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 import sit.int221.sastt3.entities.Files;
 import sit.int221.sastt3.exception.ItemNotFoundException;
 import sit.int221.sastt3.repositories.FileRepo;
@@ -25,7 +27,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class FileService {
@@ -156,11 +160,57 @@ public String addFileToDB (List<String> fileName, Integer idAnnounce){
         return "Success Save";
 }
 public void deleteFileDB (Integer id) {
-    System.out.println("nnn");
-        Files data = getDataById(id);
-         fileRepo.delete(data);
-}
+    List<Files> data = getDataByIdAnnounce(id);
+    List<Files> all = fileRepo.findByNotIdAnnounce(id);
 
+    Set<String> fileNamesToKeep = new HashSet<>();
+
+    for (Files allFile : all) {
+        for (Files dataName : data) {
+            if (allFile.getFileName().equals(dataName.getFileName())) {
+                fileNamesToKeep.add(allFile.getFileName());
+            }
+        }
+
+    }
+    // Delete only the files not present in other IdAnnounce from MinIO
+    for (Files dataFile : data) {
+        if (!fileNamesToKeep.contains(dataFile.getFileName())) {
+            deleteFile(dataFile.getFileName());
+        }
+    }
+    // Finally, delete all files associated with the provided IdAnnounce from the database
+    fileRepo.deleteAll(data);
+
+}
+    public void deleteFileByStep (Integer id,String name) {
+        List<Files> data = getDataByIdAnnounce(id);
+        List<Files> nameFile = fileRepo.findByNameFiles(name);
+        List<Files> all = fileRepo.findByNotIdAnnounce(id);
+
+        Set<String> fileNamesToKeep = new HashSet<>();
+
+        for (Files allFile : all) {
+            for (Files dataName : data) {
+                if (allFile.getFileName().equals(dataName.getFileName())) {
+                    fileRepo.delete(dataName);
+                    fileNamesToKeep.add(allFile.getFileName());
+                }
+            }
+
+        }
+        // Delete only the files not present in other IdAnnounce from MinIO
+        for (Files dataFile : data) {
+            for(Files fileName: nameFile) {
+                if (!fileNamesToKeep.contains(dataFile.getFileName()) && fileName.getIdAnnounce().equals(dataFile.getIdAnnounce())) {
+                    deleteFile(dataFile.getFileName());
+                    fileRepo.delete(fileName);
+                }
+            }
+        }
+        // Finally, delete all files associated with the provided IdAnnounce from the database
+
+    }
     //old
 //    private final Path fileStorageLocation;
 //    @Autowired

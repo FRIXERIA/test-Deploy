@@ -3,7 +3,7 @@ import { ref, onMounted, computed, inject, onUpdated, onBeforeUpdate, VueElement
 import { useRouter } from 'vue-router'
 import { useRoute } from 'vue-router';
 import { useAnnounce, useMode } from '../stores/announcement'
-import { fetchId } from '../code/get.js';
+import { fetchId, fetchFile, fetchFileName } from '../code/get.js';
 // import { switchMode } from '../stores/closeMode'
 
 // let myMode = switchMode()
@@ -13,10 +13,11 @@ let detail = ref({})
 let newDate = ref()
 let showAlert = ref(true)
 let myMode = useMode()
+const fileName = ref({})
 
 onMounted(async () => {
     if (params.id !== undefined) {
-        detail.value = await fetchId(params.id,true)
+        detail.value = await fetchId(params.id, true)
     }
     if (detail.value === undefined) {
         showAlert.value = false
@@ -33,7 +34,14 @@ onMounted(async () => {
         detail.value.publishDate = convertDate(detail.value.publishDate)
         detail.value.closeDate = convertDate(detail.value.closeDate)
     }
-
+    if (myMode.mode === undefined || myMode.mode === null) {
+        if (detail.value.publishDate === convertDate(detail.value.publishDate)) {
+            myMode.mode = 'active'
+        }
+        if (detail.value.closeDate === convertDate(detail.value.closeDate)) {
+            myMode.mode = 'close'
+        }
+    }
     if (myMode.mode === "close") {
         showClosed.value = true
         showActive.value = false
@@ -43,6 +51,13 @@ onMounted(async () => {
         showClosed.value = false
         showActive.value = true
     }
+    fileName.value = await fetchFileName(params.id)
+    fileName.value.forEach(async (file) => {
+        const blob = await fetchFile(file.fileName);
+        // fileData.value = await fetchFile(file.fileName)
+        displayFile(blob, file.fileName);
+    })
+    console.log(fileName.value);
 })
 
 const options = ref({
@@ -63,6 +78,103 @@ let showActive = ref()
 // function showClosedVal() {
 //     showClosed.value = !showClosed.value
 // }
+
+function displayFile(blob, fileName) {
+    const fileListContainer = document.getElementById('fileList');
+
+    // Determine the appropriate MIME type based on the file extension
+    const blobType = getBlobType(fileName);
+
+    // Create or find a container for the specific file type
+    let fileTypeContainer = document.getElementById(blobType);
+    if (!fileTypeContainer) {
+        // Create a container for the file type if it doesn't exist
+        fileTypeContainer = document.createElement('div');
+        fileTypeContainer.id = blobType;
+
+        // Create a heading for the file type group
+        const fileTypeHeading = document.createElement('h2');
+        getFriendlyFileType(blobType); // Display a friendly file type name
+        fileTypeHeading.style.padding = '8px'; // Add padding for better appearance
+        fileTypeContainer.appendChild(fileTypeHeading);
+
+        // Append the file type container to the main list container
+        fileListContainer.appendChild(fileTypeContainer);
+    }
+
+    // Create a container for each file
+    const fileContainer = document.createElement('div');
+    fileContainer.style.marginBottom = '10px'; // Add some spacing between files
+
+    // Check the MIME type to determine the file type
+    if (isImageType(blobType)) {
+        // Display image
+        const imgElement = document.createElement('a');
+        imgElement.href = URL.createObjectURL(blob);
+        imgElement.target = '_blank'
+        imgElement.textContent = fileName
+        imgElement.alt = fileName; // Set the alt attribute if needed
+        imgElement.style.color = 'blue'
+        imgElement.style.textDecorationLine = "underline"
+        imgElement.style.width = '200px'; // Set the width or other styles as needed
+        fileContainer.appendChild(imgElement);
+    } else {
+        // Display download link for non-image files
+        const fileLink = document.createElement('a');
+        fileLink.href = URL.createObjectURL(blob);
+        fileLink.download = fileName; // Set the download attribute with the file name
+        fileLink.textContent = fileName; // Display the file name
+        fileLink.style.color = 'blue'
+        fileLink.style.textDecorationLine = "underline"
+        //fileLink.style.padding = '3px 8px 3px 8px'; // Add some padding for better appearance
+        // fileLink.style.border = '1px solid #000000'; // Gray border
+        // fileLink.style.borderRadius = '8px'; // Rounded corners
+        fileContainer.appendChild(fileLink);
+    }
+
+    // Append the file container to the specific file type container
+    fileTypeContainer.appendChild(fileContainer);
+}
+
+function getFriendlyFileType(mimeType) {
+    // Provide friendly names for different file types
+    switch (mimeType) {
+        case 'image/jpeg':
+            return 'JPEG Images';
+        case 'image/png':
+            return 'PNG Images';
+        case 'application/pdf':
+            return 'PDF Files';
+        case 'application/msword':
+            return 'Word Documents';
+        default:
+            return 'Other Files';
+    }
+}
+
+function getBlobType(fileName) {
+    const extension = fileName.split('.').pop().toLowerCase();
+
+    switch (extension) {
+        case 'jpg':
+        case 'jpeg':
+            return 'image/jpeg';
+        case 'png':
+            return 'image/png';
+        case 'pdf':
+            return 'application/pdf';
+        case 'doc':
+        case 'docx':
+            return 'application/msword';
+        default:
+            return 'application/octet-stream'; // Default MIME type for unknown files
+    }
+}
+
+function isImageType(mimeType) {
+    const supportedImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    return supportedImageTypes.includes(mimeType);
+}
 </script>
  
 <template>
@@ -83,7 +195,13 @@ let showActive = ref()
             </div> -->
             <div class="border-b-2 border-slate-400"></div>
             <!-- <div class="mx-5 my-5 ann-description font-semibold">{{ detail.announcementDescription }}</div> -->
-            <div class="mx-5 my-5 ann-description ql-editor" v-html="detail.announcementDescription"></div>
+            <p class="font-semibold text-3xl mx-9 mt-5">Description:</p>
+            <div class="mx-5 mb-5 ann-description ql-editor text-xl" v-html="detail.announcementDescription"></div>
+            <div class="mx-9 my-5">
+                <p class="font-semibold text-3xl mt-5" v-show="fileName.length !== 0">File(s):</p>
+                <div id="fileList" class="flex flex-row space-x-5 text-xl">
+                </div>
+            </div>
             <RouterLink :to="{ name: 'UserAll' }" @click="myMode.setMode('active')"><button
                     class="btn btn-outline btn-success mx-5 ann-button" id="back">Back</button>
             </RouterLink>
@@ -108,7 +226,13 @@ let showActive = ref()
             </div>
             <div class="border-b-2 border-slate-400"></div>
             <!-- <div class="mx-5 my-5 ann-description font-semibold">{{ detail.announcementDescription }}</div> -->
-            <div class="mx-5 my-5 ann-description ql-editor" v-html="detail.announcementDescription"></div>
+            <p class="font-semibold text-3xl mx-9 mt-5">Description:</p>
+            <div class="mx-5 mb-5 ann-description ql-editor" v-html="detail.announcementDescription"></div>
+            <div class="mx-9 my-5">
+                <p class="font-semibold text-3xl mt-5" v-show="fileName.length !== 0">File(s):</p>
+                <div id="fileList" class="flex flex-row space-x-5 text-xl">
+                </div>
+            </div>
             <RouterLink :to="{ name: 'UserAll' }" @click="myMode.setMode('close')"><button
                     class="btn btn-outline btn-success mx-5 ann-button" id="back">Back</button>
             </RouterLink>

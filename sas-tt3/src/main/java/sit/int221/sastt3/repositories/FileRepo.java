@@ -11,6 +11,9 @@ import java.util.List;
 public interface FileRepo extends JpaRepository<Files,Integer> {
     @Query("SELECT f FROM Files f WHERE f.IdAnnounce=:id")
     List<Files> findByIdAnnounce (Integer id);
+
+    @Query("SELECT f FROM Files f WHERE f.IdAnnounce <> :id")
+    List<Files> findByNotIdAnnounce(Integer id);
     @Query("SELECT f FROM Files f WHERE f.fileName=:name")
     List<Files> findByNameFiles (String name);
 }

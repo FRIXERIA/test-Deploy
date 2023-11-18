@@ -352,19 +352,19 @@ const fetchFileName = async (id) => {
 
 // ได้ไฟล์
 const fetchFile = async (name) => {
-  let encode = encodeURIComponent(name)
+  // let encode = encodeURIComponent(name)
   try {
    
-    const res = await fetch(`${import.meta.env.VITE_ROOT_API}/api/files/${encode}`, {
+    const res = await fetch(`${import.meta.env.VITE_ROOT_API}/api/files/${name}`, {
       method: "GET",
     });
     if (res.ok) {
-      const data = await res.formData();
-      console.log(data.value);
+      const data = await res.blob();
+      console.log(data);
       return data;
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
 export {

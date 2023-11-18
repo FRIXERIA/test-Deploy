@@ -32,6 +32,7 @@ const sendOtpBtn = ref(false)
 const check = ref(false)
 const delSuccess = ref(false)
 const useBtn = ref(false)
+const confirm = ref(false)
 
 onMounted(async () => {
     console.log(general.value);
@@ -272,7 +273,10 @@ const subscribed = async () => {
         });
         if (res.ok) {
             localStorage.removeItem(subEmail.value)
-            subSuccess.value = true
+            confirm.value = false
+            setTimeout(()=>{
+                subSuccess.value = true
+            },500)
             setTimeout(() => {
                 subSuccess.value = false
                 router.push('/announcement');
@@ -429,7 +433,7 @@ const handleInput = () => {
                         <label for="ฝึกงาน"> ฝึกงาน</label><br>
                     </div>
                     <button type="submit" value="Subscribe" class="subscribe hover:bg-teal-900"
-                        @click="subscribed" :disabled="useBtn">Subscirbe</button>
+                        @click="confirm=true" :disabled="useBtn">Subscirbe</button>
                 </div>
                 <div v-if="step === 4">
                     <h2 class="subtitle p-3 bg-teal-600 rounded-full">4</h2>
@@ -478,6 +482,31 @@ const handleInput = () => {
                     <p class="text-black text-center text-3xl p-6 font-semibold">Thank you<br> for subscribing.</p>
                     <p class="text-lg text-gray-600">We have send you an email to</p>
                     <p class="text-lg text-gray-600">{{ email }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div v-show="confirm">
+        <div class="popup">
+            <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-black opacity-60">
+            </div>
+        </div>
+        <div class="popup">
+            <div
+                class="p-5 fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1/7 h-2/7 bg-white border-4 border-gray-500 rounded-xl">
+                <div class="relative flex flex-col text-center justify-center items-center pl-5 pr-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-24 h-24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+                    </svg>
+                    <p class="text-black text-center text-3xl p-6 font-semibold">Are you sure?</p>
+                    <p class="text-lg text-gray-600">We will send you an email when<br>there are updates in that category to</p>
+                    <p class="text-lg text-gray-600">{{ email }}</p>
+                    <div class="flex flex-row space-x-5 mt-5 h-12">
+                        <button @click="subscribed" class="w-24 rounded-lg bg-green-500 text-xl hover:bg-green-900 hover:text-white">YES</button>
+                        <button @click="confirm=false" class="w-24 rounded-lg bg-red-500 text-xl hover:bg-red-900 hover:text-white">NO</button>
+                    </div>
                 </div>
             </div>
         </div>

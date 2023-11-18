@@ -86,8 +86,8 @@ public class SendEmailService {
         String desc = newAnnounce.getAnnouncementDescription();
         String header ="New Announcement";
 //        String link = "https://intproj22.sit.kmutt.ac.th/tt3/announcement/" + newAnnounce.getId();
-        String link = "http://localhost:5174/announcement/"+ newAnnounce.getId();
-        String linkUnsub = "https://intproj22.sit.kmutt.ac.th/tt3/announcement";
+        String link = "https://intproj22.sit.kmutt.ac.th/tt3/announcement/"+ newAnnounce.getId();
+        String linkUnsub = "https://intproj22.sit.kmutt.ac.th/tt3/verify";
 //        String sendBody = "from (sender)" +  + "<br>Description: " + desc + "<br>If you want to see more details, <a href=\"" + link + "\">click here</a>" + "<br>If you want to unsubscribe this category, <a href=\"" + linkUnsub + "\">click here</a>" ;
         List<String> email = new ArrayList<>();;
 
@@ -116,9 +116,9 @@ public class SendEmailService {
 
                     List<Subscribe> allCate = subscribeRepo.findByCategory(1);
                     for(Subscribe subscribe : allCate) {
-                        String sendBody = "from (sender)" +" "+ sender + "<br>to (subscriber)" +" "+ subscribe.getSubscriberEmail() +"<br> title" +" "+ "["+subscribe.getSubscriberEmail()+"]" +" "+ title + "<br> body" +" "+ desc
+                        String sendBody = "from (sender)" +" "+ sender + "<br>to (subscriber)" +" "+ subscribe.getSubscriberEmail() +"<br> title" +" "+ "[Your mail subscription @ SAS]" +" "+ title + "<br> body" +" "+ desc
 
-                               + "Announcement link :" +link + "<br> To unsubscribe:" +"<br>If you no longer wish for"+" "+ subscribe.getSubscriberEmail() + "to receive any email announcement messges from SAS, please click the following <a href=\"" + linkUnsub + "\">click here</a>"  ;
+                               + "Announcement link :" +link + "<br> To unsubscribe:" +"<br>If you no longer wish for"+" "+ subscribe.getSubscriberEmail() +" "+ "to receive any email announcement messges from SAS, please click the following <a href=\"" + linkUnsub + "\">click here</a>"  ;
                         mailMessage.setFrom(sender);
                         mailMessage.setTo(subscribe.getSubscriberEmail());
                         mailMessage.setText(sendBody, true);
@@ -135,9 +135,9 @@ public class SendEmailService {
                 if(newAnnounce.getCategoryId().equals(2) && newAnnounce.getAnnouncementDisplay().equals("Y")){
                     List<Subscribe> allCate = subscribeRepo.findByCategory(2);
                     for(Subscribe subscribe : allCate) {
-                        String sendBody = "from (sender)" +" "+ sender + "<br>to (subscriber)" +" "+ subscribe.getSubscriberEmail() +"<br> title" +" "+ "["+subscribe.getSubscriberEmail()+"]" +" "+ title + "<br> body" +" "+ desc
+                        String sendBody = "from (sender)" +" "+ sender + "<br>to (subscriber)" +" "+ subscribe.getSubscriberEmail() +"<br> title" +" "+ "[Your mail subscription @ SAS]" +" "+ title + "<br> body" +" "+ desc
 
-                                + "Announcement link :" +link + "<br> To unsubscribe:" +"<br>If you no longer wish for"+" "+ subscribe.getSubscriberEmail() + "to receive any email announcement messges from SAS, please click the following <a href=\"" + linkUnsub + "\">click here</a>"  ;
+                                + "Announcement link :" +link + "<br> To unsubscribe:" +"<br>If you no longer wish for"+" "+ subscribe.getSubscriberEmail() +" "+ "to receive any email announcement messges from SAS, please click the following <a href=\"" + linkUnsub + "\">click here</a>"  ;
                         mailMessage.setFrom(sender);
                         mailMessage.setTo(subscribe.getSubscriberEmail());
                         mailMessage.setText(sendBody, true);
@@ -154,9 +154,9 @@ public class SendEmailService {
                 if(newAnnounce.getCategoryId().equals(3) && newAnnounce.getAnnouncementDisplay().equals("Y")){
                     List<Subscribe> allCate = subscribeRepo.findByCategory(3);
                     for(Subscribe subscribe : allCate) {
-                        String sendBody = "from (sender)" +" "+ sender + "<br>to (subscriber)" +" "+ subscribe.getSubscriberEmail() +"<br> title" +" "+ "["+subscribe.getSubscriberEmail()+"]" +" "+ title + "<br> body" +" "+ desc
+                        String sendBody = "from (sender)" +" "+ sender + "<br>to (subscriber)" +" "+ subscribe.getSubscriberEmail() +"<br> title" +" "+ "[Your mail subscription @ SAS]" +" "+ title + "<br> body" +" "+ desc
 
-                                + "Announcement link :" +link + "<br> To unsubscribe:" +"<br>If you no longer wish for"+" "+ subscribe.getSubscriberEmail() + "to receive any email announcement messges from SAS, please click the following <a href=\"" + linkUnsub + "\">click here</a>"  ;
+                                + "Announcement link :" +link + "<br> To unsubscribe:" +"<br>If you no longer wish for"+" "+ subscribe.getSubscriberEmail() +" "+ "to receive any email announcement messges from SAS, please click the following <a href=\"" + linkUnsub + "\">click here</a>"  ;
                         mailMessage.setFrom(sender);
                         mailMessage.setTo(subscribe.getSubscriberEmail());
                         mailMessage.setText(sendBody, true);
@@ -172,9 +172,9 @@ public class SendEmailService {
                 if(newAnnounce.getCategoryId().equals(4) && newAnnounce.getAnnouncementDisplay().equals("Y")){
                     List<Subscribe> allCate = subscribeRepo.findByCategory(4);
                     for(Subscribe subscribe : allCate) {
-                        String sendBody = "from (sender)" +" "+ sender + "<br>to (subscriber)" +" "+ subscribe.getSubscriberEmail() +"<br> title" +" "+ "["+subscribe.getSubscriberEmail()+"]" +" "+ title + "<br> body" +" "+ desc
+                        String sendBody = "from (sender)" +" "+ sender + "<br>to (subscriber)" +" "+ subscribe.getSubscriberEmail() +"<br> title" +" "+ "[Your mail subscription @ SAS]" +" "+ title + "<br> body" +" "+ desc
 
-                                + "Announcement link :" +link + "<br> To unsubscribe:" +"<br>If you no longer wish for"+" "+ subscribe.getSubscriberEmail() + "to receive any email announcement messges from SAS, please click the following <a href=\"" + linkUnsub + "\">click here</a>"  ;
+                                + "Announcement link :" +link + "<br> To unsubscribe:" +"<br>If you no longer wish for"+" "+ subscribe.getSubscriberEmail() +" "+ "to receive any email announcement messges from SAS, please click the following <a href=\"" + linkUnsub + "\">click here</a>"  ;
                         mailMessage.setFrom(sender);
                         mailMessage.setTo(subscribe.getSubscriberEmail());
                         mailMessage.setText(sendBody, true);

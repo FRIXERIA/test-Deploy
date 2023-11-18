@@ -77,6 +77,8 @@ http.csrf().disable()
                 .requestMatchers(HttpMethod.DELETE,"/api/files/{filename:.+}").permitAll()
                 .requestMatchers(HttpMethod.POST,"/api/allEmail").permitAll()
                 .requestMatchers(HttpMethod.GET,"/api/files/fileName/{id}").permitAll()
+                .requestMatchers(HttpMethod.DELETE,"/api/files/fileStep/{id}").permitAll()
+                .requestMatchers(HttpMethod.DELETE,"/api/files/fileName/{id}").permitAll()
                 .requestMatchers(HttpMethod.GET,"/api/allCategory").permitAll()
                 .anyRequest().authenticated())
         .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted, computed, onBeforeUpdate, onBeforeMount, VueElement, onUpdated, provide } from 'vue'
-import { fetchId, fetchCategory, fetchToken, fetchFile,fetchFileName } from '../code/get.js';
+import { ref, watch, onMounted, computed, onBeforeUpdate, onBeforeMount, VueElement, onUpdated, provide } from 'vue'
+import { fetchId, fetchCategory, fetchToken, fetchFile, fetchFileName } from '../code/get.js';
 import { useRoute } from 'vue-router'
 import { useRouter } from 'vue-router'
 import { useAnnounce } from '../stores/announcement';
@@ -51,7 +51,7 @@ let data = ref({})
 let lengthTitle = ref(data.value.announcementTitle)
 
 // file
-let fileData = ref()
+let fileData = ref([])
 let nameData = ref({})
 onMounted(async () => {
     if (!jwtToken) {
@@ -100,9 +100,9 @@ onMounted(async () => {
         else {
             data.value = await fetchId(params.id)
             nameData.value = await fetchFileName(params.id)
-            nameData.value.forEach(async (f)=>{
+            nameData.value.forEach(async (f) => {
                 console.log(f.fileName)
-                fileData.value = await fetchFile(f.fileName)
+                fileData.value.push(await fetchFile(f.fileName))
                 console.log(fileData.value)
             })
             if (data.value === 403) {
@@ -171,6 +171,8 @@ onMounted(async () => {
 
 onBeforeUpdate(() => {
     console.log(fileInput.value.files);
+    console.log(selectedFiles.value);
+    console.log(nameData.value);
     //add
     if (params.id === undefined) {
         if (data.value.announcementTitle !== undefined) {
@@ -400,8 +402,40 @@ onBeforeUpdate(() => {
             if (!timeClose.value)
                 timeClose.value = `18:00`
         }
+        // for (let i = 0; i < selectedFiles.value.length; i++) {
+        //     selectedFiles.value = new File([fileData.value], nameData.value.fileName)
+        // }
+        if (selectedFiles?.value.length !== 0) {
+            useButton.value = false
+        }
+        let oldLength = nameData.value.length
+        if (nameData?.value === oldLength) {
+            useButton.value = true
+        }
+        if (nameData?.value.length !== oldLength) {
+            useButton.value = false
+        }
     }
 })
+
+function getBlobType(fileName) {
+    const extension = fileName?.split('.').pop().toLowerCase();
+
+    switch (extension) {
+        case 'jpg':
+        case 'jpeg':
+            return 'image/jpeg';
+        case 'png':
+            return 'image/png';
+        case 'pdf':
+            return 'application/pdf';
+        case 'doc':
+        case 'docx':
+            return 'application/msword';
+        default:
+            return 'application/octet-stream'; // Default MIME type for unknown files
+    }
+}
 
 function cancelAction() {
     router.go(-1)
@@ -420,7 +454,7 @@ const saveFile = async (titleName) => {
     for (let i = 0; i < selectedFiles.value.length; i++) {
         formData.append('file', selectedFiles.value[i]);
     }
-        formData.append('title',titleName)
+    formData.append('title', titleName)
     try {
         const res = await fetch(`${import.meta.env.VITE_ROOT_API}/api/files`, {
             method: "POST",
@@ -442,11 +476,20 @@ const saveFile = async (titleName) => {
 
 
 const updateFile = async (titleName) => {
+    if (fileData.value !== undefined && nameData.value !== undefined) {
+        for (let i = 0; i < fileData.value.length; i++) {
+            console.log(fileData.value[i])
+            console.log('aaaaaa')
+            selectedFiles.value.push(new File([fileData.value[i]], nameData.value[i].fileName))
+        }
+    }
+    // selectedFiles.value.push(new File([fileData.value], nameData.value.fileName))
     const formData = new FormData();
     for (let i = 0; i < selectedFiles.value.length; i++) {
         formData.append('file', selectedFiles.value[i]);
+        console.log(selectedFiles.value);
     }
-        formData.append('title',titleName)
+    formData.append('title', titleName)
     try {
         const res = await fetch(`${import.meta.env.VITE_ROOT_API}/api/files`, {
             method: "PUT",
@@ -698,7 +741,7 @@ let update = (async (edit) => {
             const modifyAnn = await res.json()
             myAnnounce.announcement = myAnnounce.announcement.map((ann) => {
                 if (ann.id === modifyAnn.id) {
-                        ann.announcementTitle = modifyAnn.announcementTitle,
+                    ann.announcementTitle = modifyAnn.announcementTitle,
                         ann.announcementCategory = modifyAnn.announcementCategory,
                         ann.announcementDescription = modifyAnn.announcementDescription,
                         ann.publishDate = modifyAnn.publishDate,
@@ -749,21 +792,6 @@ const previewBinaryFile = (binaryFileObject) => {
     return URL.createObjectURL(binaryFileObject)
 }
 
-// const handleFileChange = () => {
-//     selectedFiles.value = Array.from(fileInput.value.files);
-//     fileLimit.value = selectedFiles.value.some(file => file.size > 20 * 1024 * 1024);
-//     // selectedFiles.value.forEach((file, index) => {
-//     //     if (file.name.toLowerCase().endsWith('.jpg') ||
-//     //         file.name.toLowerCase().endsWith('.jpeg') ||
-//     //         file.name.toLowerCase().endsWith('.png')
-//     //     ) {
-//     //         myImage.value = `images/${file.name}`
-//     //         previewImageFile.value = previewBinaryFile(file)
-//     //         return
-//     //     }
-//     // })
-// }
-
 const handleFileChange = (event) => {
     const files = event.target.files
     for (let i = 0; i < files.length; i++) {
@@ -776,84 +804,57 @@ const handleFileChange = (event) => {
             fileLimit.value = true
         }
     }
-    selectedFiles.value.forEach((file, index) => {
-        if (file.name.toLowerCase().endsWith('.jpg') ||
-            file.name.toLowerCase().endsWith('.jpeg') ||
-            file.name.toLowerCase().endsWith('.png')
-        ) {
-            myImage.value = `images/${file.name}`
-            previewImageFile.value = previewBinaryFile(file)
-            return
-        }
-    })
     if (selectedFiles.value.length > 5) {
         selectedFiles.value = selectedFiles.value.slice(0, 5)
     }
-}
-
-const formatFileSize = (size) => {
-    const units = ['B', 'KB', 'MB', 'GB', 'TB']
-    let i = 0
-    while (size >= 1024 && i < units.length - 1) {
-        size /= 1024
-        i++
+    if (nameData.value.length > 5) {
+        nameData.value = nameData.value.slice(0, 5)
     }
-    return `${size.toFixed(2)} ${units[i]}`
 }
 
-// const previewFile = (index) => {
-//     console.log(selectedFiles.value);
-//     console.log(fileInput.value);
-//     const file = selectedFiles.value[index]
-//     for (let i = 0; i < selectedFiles.value.length; i++) {
-//         console.log(selectedFiles.value[i].name);
-//     }
-//     const reader = new FileReader()
-//     reader.onload = () => {
-//         const dataUrl = reader.result
-//         window.open(dataUrl)
-//     }
-//     reader.readAsDataURL(file)
-// }
+const deleteFile = async (index, name, id) => {
+    if (params.id) {
+        // console.log("vvv")
+        nameData.value.splice(index, 1)
+        // let oldFiles
+        // nameData.value = nameData.value.filter((file) => {
+        //     oldFiles = file.idFiles == index
+        //     return file.idFiles !== index
+        // })
+        // let type = getBlobType(oldFiles.fileName)
+        fileData.value.splice(index, 1)
+        // fileData.value = fileData.value.filter((file) => {
+        //     return file.type !== type
+        // })
 
-const downloadFile = (index) => {
-    const file = selectedFiles.value[index]
-    const downloadLink = document.createElement('a')
-    downloadLink.href = URL.createObjectURL(file)
-    downloadLink.download = file.name
-    document.body.appendChild(downloadLink)
-    downloadLink.click()
-    document.body.removeChild(downloadLink)
+        try {
+            const res = await fetch(
+                `${import.meta.env.VITE_ROOT_API}/api/files/fileStep/${id}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        "content-type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        fileName: name
+                    })
+                }
+            );
+            if (res.ok) {
+
+            } else {
+                const errorResponse = await res.json();
+                alert(`There is an error : ${JSON.stringify(errorResponse)}`);
+            }
+        } catch (err) {
+            alert(err);
+        }
+    }
 }
 
-const deleteFile = (index) => {
+const deleted = (index) => {
     selectedFiles.value.splice(index, 1)
 }
-
-// const saveFile = async () => {
-//     const formData = new FormData();
-//     for (let i = 0; i < selectedFiles.value.length; i++) {
-//         formData.append('file', selectedFiles.value[i]);
-//     }
-//         formData.append('title',data.announcementTitle)
-//     try {
-//         const res = await fetch(`${import.meta.env.VITE_ROOT_API}/api/files`, {
-//             method: "POST",
-//             body: formData,
-//         });
-
-//         if (res.ok) {
-//             console.log('Files uploaded successfully');
-//             const addedFiles = await res.text();
-//             console.log(addedFiles);
-//             // Perform any additional logic as needed
-//         } else {
-//             console.error('Failed to upload files');
-//         }
-//     } catch (error) {
-//         console.error('Error during file upload:', error);
-//     }
-// };
 </script>
 
 <template>
@@ -892,38 +893,63 @@ const deleteFile = (index) => {
             <p>Attach Files.</p>
         </div>
         <!-- <form id="fileForm" @submit.prevent="saveFile"> -->
-            <form id="fileForm">
+        <form id="fileForm">
             <input type="file" name="file" ref="fileInput" multiple @change="handleFileChange" />
             <div class="flex flex-col">
-                <div v-for="(file, index) in selectedFiles" :key="index" class="flex flex-col items-start">
-                    <span>{{ file.name }} - {{ formatFileSize(file.size) }}</span>
-                    <div class="flex flex-row text-blue-500">
-                        <!-- <button type="button" @click="previewFile(index)" class="hover:text-blue-900">Preview</button> -->
-                        <button type="button" @click="downloadFile(index)" class="hover:text-blue-900">Download</button>
-                        <button type="button" @click="deleteFile(index)" class="pl-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-6 h-6 stroke-red-500 hover:stroke-red-900">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                <img v-show="previewImageFile" :src="previewImageFile"
+                <p v-if="nameData.length !== 0" v-for="(file, index) in nameData" :key="index"
+                    class="flex flex-row items-start">
+                    <span v-if="nameData.length !== 0">{{ file.fileName }}</span>
+                    <button type="button" @click="deleteFile(index, file.fileName, params.id)" class="pl-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-6 h-6 stroke-red-500 hover:stroke-red-900">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                        </svg>
+                    </button>
+                </p>
+                <p v-for="(file, index) in selectedFiles" :key="index" class="flex flex-row items-start">
+                    <span>{{ file.name }}</span>
+                    <button type="button" @click="deleted(index)" class="pl-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-6 h-6 stroke-red-500 hover:stroke-red-900">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                        </svg>
+                    </button>
+                </p>
+                <!-- <img v-show="previewImageFile" :src="previewImageFile"
                     style="max-width: 10%;max-height: 10%; margin-top: 10px;">
                 <a class="text-blue-500 hover:text-blue-900 underline" v-show="previewImageFile" :href="previewImageFile"
-                    target="_blank">{{ myImage }}</a>
+                    target="_blank">{{ myImage }}</a> -->
                 <!-- <button type="submit"
                     class="mt-2 bg-gray-300 rounded-lg w-12 text-md font-semibold hover:bg-gray-500 hover:text-white">save</button> -->
-                <div v-show="fileLimit" class="text-red-500">File size exceeds 20MB limit</div>
-                <div v-show="selectedFiles.length >= 5" class="text-red-500">You can only attach up to 5 files.</div>
             </div>
-            <div class="flex flex-col" v-if="params.id">
-                <div v-for="(file, index) in nameData" :key="index" class="flex flex-col items-start">
-                        {{ file.fileName }}
-                </div>
-               
+            <div class="flex flex-col">
+                <!-- <div v-for="(file, index) in selectedFiles" :key="index" class="flex flex-row items-start">
+                    <span>{{ file.name }} - {{ formatFileSize(file.size) }}</span>
+                    <button type="button" @click="deleteFile(index)" class="pl-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-6 h-6 stroke-red-500 hover:stroke-red-900">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                        </svg>
+                    </button>
+                </div> -->
+                <!-- <div v-if="nameData.length !== 0" v-for="(file, index) in nameData" :key="index"
+                    class="flex flex-row items-start mt-2">
+                    {{ file.fileName }}
+                    <button type="button" @click="deleteFile(index)" class="pl-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-6 h-6 stroke-red-500 hover:stroke-red-900">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                        </svg>
+                    </button>
+                </div> -->
             </div>
+            <div v-show="fileLimit" class="text-red-500">File size exceeds 20MB limit</div>
+            <div v-show="selectedFiles.length >= 5 || nameData.length >= 5" class="text-red-500">You can only attach up to 5
+                files.</div>
         </form>
         <p>{{ msg }}</p>
         <div class="pt-3 font-medium">Publish Date</div>
