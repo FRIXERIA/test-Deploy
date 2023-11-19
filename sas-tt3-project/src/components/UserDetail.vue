@@ -186,7 +186,15 @@ function isImageType(mimeType) {
                 'badge badge-success badge-lg text-white': detail.announcementCategory === 'ทุนการศึกษา',
                 'badge badge-error badge-lg text-white': detail.announcementCategory === 'หางาน',
                 'badge badge-warning badge-lg text-white': detail.announcementCategory === 'ฝึกงาน'
-            }">{{ detail.announcementCategory }}</div>
+            }">{{ detail.announcementCategory }}
+             <RouterLink to="/verify" class="ann-button absolute top-26 right-56">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="0.5"
+                stroke="none" class="w-14 h-12 stroke-success hover:fill-success">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+              </svg>
+            </RouterLink>
+        </div>
 
             <!-- <div v-if="showClosed">
                 <div class="ann-close-date pt-2 ml-96 pl-48"><span class="text-red-500 font-semibold">Closed on :
@@ -219,6 +227,13 @@ function isImageType(mimeType) {
                     'badge badge-error badge-lg text-white': detail.announcementCategory === 'หางาน',
                     'badge badge-warning badge-lg text-white': detail.announcementCategory === 'ฝึกงาน'
                 }">{{ detail.announcementCategory }}</div>
+                 <RouterLink to="/verify" class="ann-button absolute top-26 right-56">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="0.5"
+                stroke="none" class="w-14 h-12 stroke-success hover:fill-success">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+              </svg>
+            </RouterLink>
                 <div class="flex flex-row ml-96 pl-80">
                     <div class="text-red-500 font-semibold pt-2 pr-1">Closed on :</div>
                     <div class="ann-close-date pt-2">{{ detail.closeDate }}</div>

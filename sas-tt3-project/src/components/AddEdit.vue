@@ -53,6 +53,7 @@ let lengthTitle = ref(data.value.announcementTitle)
 // file
 let fileData = ref([])
 let nameData = ref({})
+let load = ref()
 onMounted(async () => {
     if (!jwtToken) {
         loginfirst.value = true
@@ -101,9 +102,8 @@ onMounted(async () => {
             data.value = await fetchId(params.id)
             nameData.value = await fetchFileName(params.id)
             nameData.value.forEach(async (f) => {
-                console.log(f.fileName)
                 fileData.value.push(await fetchFile(f.fileName))
-                console.log(fileData.value)
+            
             })
             if (data.value === 403) {
                 haveNoRight.value = true
@@ -456,11 +456,12 @@ const saveFile = async (titleName) => {
     }
     formData.append('title', titleName)
     try {
+        load.value.style.display = 'block';
         const res = await fetch(`${import.meta.env.VITE_ROOT_API}/api/files`, {
             method: "POST",
             body: formData,
         });
-
+        load.value.style.display = 'none';
         if (res.ok) {
             console.log('Files uploaded successfully');
             const addedFiles = await res.text();
@@ -487,15 +488,15 @@ const updateFile = async (titleName) => {
     const formData = new FormData();
     for (let i = 0; i < selectedFiles.value.length; i++) {
         formData.append('file', selectedFiles.value[i]);
-        console.log(selectedFiles.value);
     }
     formData.append('title', titleName)
     try {
+        load.value.style.display = 'block';
         const res = await fetch(`${import.meta.env.VITE_ROOT_API}/api/files`, {
             method: "PUT",
             body: formData,
         });
-
+        load.value.style.display = 'none';
         if (res.ok) {
             console.log('Files uploaded successfully');
             const addedFiles = await res.text();
@@ -585,8 +586,10 @@ let addNew = (async (addNew) => {
     if (!jwtToken) {
         router.push({ name: "UserLogin" });
     }
-    try {
 
+
+    try {
+    load.value.style.display = 'block';
         const res = await fetch(`${import.meta.env.VITE_ROOT_API}/api/announcements`, {
             method: "POST",
             headers: {
@@ -603,16 +606,26 @@ let addNew = (async (addNew) => {
                 categoryId: addNew.categoryId
             })
         })
-
+        load.value.style.display = 'none';
         if (res.ok) {
             const newValue = await res.json()
 
             myAnnounce.announcement.push(newValue)
             let title = addNew.announcementTitle
+
+            // if(selectedFiles.value.length==0){
+            //     router.push({ name: 'Data' });
+            // }
+
+            if(selectedFiles.value.length!== 0){
+                console.log("add")
             await saveFile(title)
+        
+            }
             router.push({ name: 'Data' });
+        }  
             // location.reload('/admin/announcement')
-        }
+        
         else if (res.status == 403) {
             haveNoRight.value = true
         }
@@ -720,6 +733,7 @@ let update = (async (edit) => {
         router.push({ name: "UserLogin" });
     }
     try {
+        load.value.style.display = 'block';
         const res = await fetch(`${import.meta.env.VITE_ROOT_API}/api/announcements/${edit.id}`, {
             method: "PUT",
             headers: {
@@ -736,7 +750,7 @@ let update = (async (edit) => {
                 categoryId: edit.categoryId
             })
         })
-
+        load.value.style.display = 'none';
         if (res.ok) {
             const modifyAnn = await res.json()
             myAnnounce.announcement = myAnnounce.announcement.map((ann) => {
@@ -752,9 +766,13 @@ let update = (async (edit) => {
                 return ann
             })
             let title = edit.announcementTitle
-            await updateFile(title)
+            if(selectedFiles.value.length!== 0) {
+                console.log("up")
+                await updateFile(title)
+            }
             // location.reload('/admin/announcement')
             router.push({ name: 'Data' });
+            
         }
         else if (res.status == 403) {
             haveNoRight.value = true
@@ -1051,5 +1069,21 @@ const deleted = (index) => {
                 </div>
             </div>
         </div>
+        <div id="loader" style="display: none;" ref="load">
+            <div class="popup">
+                <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-black opacity-60">
+                </div>
+            </div>
+            <div class="popup">
+                <div
+                    class="p-5 fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1/7 h-2/7 bg-gray-200 border-4 border-gray-700 rounded-xl">
+                    <div class="relative flex flex-col justify-center items-center pl-5 pr-5">
+                        <p class="text-black text-center text-4xl p-6 ">Loading ....</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
     </div>
 </template>
