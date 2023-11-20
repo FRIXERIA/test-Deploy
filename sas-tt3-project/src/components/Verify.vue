@@ -412,9 +412,9 @@ const handleInput = () => {
                     <h1 class="title">Select Menu</h1>
                     <p class="text">You have successfully verified your email.<br>Please select the menu below.</p>
                     <button type="submit" value="toSub" class="subscribe  hover:bg-teal-900" ref="sub"
-                        @click="step = 3">Subscirbe</button>
+                        @click="step = 3">Subscribe</button>
                     <button type="submit" id="unsub" class="unsubscribe hover:bg-red-900" @click="requestData"
-                        :disabled="unsubscriber">Unsubscirbe</button>
+                        :disabled="unsubscriber">Unsubscribe</button>
                 </div>
                 <div v-show="step === 3">
                     <h2 class="subtitle p-3 bg-teal-600 rounded-full">4</h2>
@@ -433,7 +433,7 @@ const handleInput = () => {
                         <label for="ฝึกงาน"> ฝึกงาน</label><br>
                     </div>
                     <button type="submit" value="Subscribe" class="subscribe hover:bg-teal-900"
-                        @click="confirm=true" :disabled="useBtn">Subscirbe</button>
+                        @click="confirm=true" :disabled="useBtn">Subscribe</button>
                 </div>
                 <div v-if="step === 4">
                     <h2 class="subtitle p-3 bg-teal-600 rounded-full">4</h2>
@@ -460,7 +460,7 @@ const handleInput = () => {
                         </div>
                     </div>
                     <button type="submit" value="Subscribe" class="unsubscribe hover:bg-red-900"
-                        @click="check=true" :disabled="useBtn">Unsubscirbe</button>
+                        @click="check=true" :disabled="useBtn">Unsubscribe</button>
                 </div>
             </div>
         </div>
